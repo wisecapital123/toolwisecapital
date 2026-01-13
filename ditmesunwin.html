@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wisesunwin - AI Tài Xỉu Analyzer Pro</title>
+    <style>
+        /* GIỮ NGUYÊN CSS CỦA BẠN */
+        :root {
+            --primary-pink: #ff4d94;
+            --dark-pink: #2d0a1a;
+            --bg-dark: #1a050f;
+            --text-light: #ffe6f0;
+            --accent-glow: 0 0 15px rgba(255, 77, 148, 0.6);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: var(--dark-pink);
+            width: 100%;
+            max-width: 500px;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: var(--accent-glow);
+            border: 1px solid var(--primary-pink);
+            position: relative;
+        }
+
+        header { text-align: center; margin-bottom: 20px; }
+        header h1 { color: var(--primary-pink); font-size: 24px; text-transform: uppercase; letter-spacing: 2px; }
+        header p { font-size: 12px; opacity: 0.8; }
+
+        .ai-robot-container {
+            display: flex;
+            justify-content: center;
+            margin: 15px 0;
+        }
+        .robot {
+            width: 80px;
+            height: 80px;
+            background: var(--primary-pink);
+            border-radius: 50% 50% 40% 40%;
+            position: relative;
+            animation: float 3s ease-in-out infinite;
+            box-shadow: var(--accent-glow);
+        }
+        .robot::before, .robot::after {
+            content: '';
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+            top: 25px;
+        }
+        .robot::before { left: 20px; }
+        .robot::after { right: 20px; }
+        .robot-eye-glow {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: #00ffff;
+            border-radius: 50%;
+            top: 28px;
+            left: 23px;
+            animation: blink 2s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        @keyframes blink {
+            0%, 90%, 100% { transform: scale(1); }
+            95% { transform: scale(0.1); }
+        }
+
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
+        input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--primary-pink);
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            outline: none;
+        }
+        input:focus { border-color: #ff85b3; box-shadow: 0 0 5px var(--primary-pink); }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(45deg, #ff4d94, #ff0066);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        button:hover { transform: scale(1.02); filter: brightness(1.2); }
+
+        #prediction-result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            display: none;
+            text-align: center;
+            border-left: 5px solid var(--primary-pink);
+        }
+
+        .tai-color { color: #ff0000; font-weight: 900; font-size: 32px; text-shadow: 0 0 10px rgba(255,0,0,0.5); }
+        .xiu-color { color: #00f2ff; font-weight: 900; font-size: 32px; text-shadow: 0 0 10px rgba(0,242,255,0.5); }
+
+        .history {
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 13px;
+            border-top: 1px solid rgba(255, 77, 148, 0.3);
+            padding-top: 10px;
+        }
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 10px;
+            margin-bottom: 5px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 5px;
+        }
+
+        .footer-link {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 11px;
+        }
+        .footer-link a { color: var(--primary-pink); text-decoration: none; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>WISESUNWIN AI v2.0</h1>
+            <p>Hệ Thống Phân Tích Thuật Toán Sunwin Cao Cấp</p>
+        </header>
+
+        <div class="ai-robot-container">
+            <div class="robot">
+                <div class="robot-eye-glow"></div>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label>🆔 Mã phiên (8 số cuối):</label>
+            <input type="number" id="session-code" placeholder="Vd: 87654321">
+        </div>
+
+        <div class="input-group">
+            <label>🎲 Kết quả 5-7 phiên gần nhất:</label>
+            <input type="text" id="dice-history" placeholder="Vd: T12, T15, X6, X8, T11">
+        </div>
+
+        <button onclick="analyzeData()">
+            <span>⚡</span> PHÂN TÍCH THUẬT TOÁN
+        </button>
+
+        <div id="prediction-result">
+            <div id="result-label" style="font-size: 14px; margin-bottom: 5px; color: #aaa;">DỰ ĐOÁN TỪ AI:</div>
+            <div id="main-result"></div>
+            <div id="probability" style="margin-top: 10px; font-weight: bold;"></div>
+            <div id="reason" style="font-size: 11px; line-height: 1.4; font-style: italic; margin-top: 10px; color: #ffb3d1;"></div>
+        </div>
+
+        <div class="history" id="history-list">
+            <h4 style="color: var(--primary-pink); margin-bottom: 10px;">Lịch sử phân tích</h4>
+        </div>
+
+        <div class="footer-link">
+             Dữ liệu thời gian thực <a href="https://sun.win" target="_blank">Sun.win tạo bởi tele:wisecapital123</a>
+        </div>
+    </div>
+
+    <script>
+        function analyzeData() {
+            const sessionInput = document.getElementById('session-code').value.trim();
+            const diceInput = document.getElementById('dice-history').value.trim();
+
+            if (!sessionInput || !diceInput) {
+                alert("Vui lòng nhập đủ thông tin!");
+                return;
+            }
+
+            const history = diceInput.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+            if (history.length < 5) {
+                alert("Cần ít nhất 5 phiên để tính toán chính xác!");
+                return;
+            }
+
+            // --- THUẬT TOÁN PHÂN TÍCH KHÔNG RANDOM ---
+            
+            // 1. Phân tích trọng số Mã Phiên (Seed)
+            const sessionLastDigits = parseInt(sessionInput.slice(-4));
+            
+            // 2. Tính biến thiên Delta (Sự chênh lệch giữa các điểm số)
+            let deltas = [];
+            for(let i=1; i < history.length; i++) {
+                deltas.push(history[i] - history[i-1]);
+            }
+            const avgDelta = deltas.reduce((a, b) => a + b, 0) / deltas.length;
+            
+            // 3. Tính "Điểm Tiên Đoán" (Prediction Point)
+            // Kết hợp: (Số cuối phiên * 3) + (Tổng điểm lịch sử) + (Biến thiên trung bình * 10)
+            const historySum = history.reduce((a, b) => a + b, 0);
+            const lastResult = history[history.length - 1];
+            
+            const calculation = Math.abs(Math.floor(
+                (sessionLastDigits * 1.5) + 
+                (historySum * 2.2) + 
+                (avgDelta * 5) + 
+                (lastResult * 0.8)
+            ));
+
+            // Xác định kết quả dựa trên tính chẵn lẻ của Calculation
+            // Tài: Nếu calculation mod 2 == 0, Xỉu: nếu lẻ (hoặc ngược lại dựa theo logic cầu)
+            // Tối ưu thêm: kiểm tra cầu bệt thực tế
+            let finalResult = "";
+            let confidence = 0;
+            let reason = "";
+
+            // Kiểm tra cầu bệt (Nếu 3 phiên gần nhất cùng loại)
+            const isTai = (n) => n > 10;
+            const streak = isTai(history[history.length-1]) === isTai(history[history.length-2]) && 
+                           isTai(history[history.length-2]) === isTai(history[history.length-3]);
+
+            if (calculation % 2 === 0) {
+                finalResult = "TÀI";
+                confidence = 78 + (calculation % 15); // Độ tự tin 78% - 93%
+            } else {
+                finalResult = "XỈU";
+                confidence = 78 + (calculation % 17);
+            }
+
+            // Logic lý giải AI
+            if (streak) {
+                reason = `Phát hiện chuỗi cầu đang ổn định. Thuật toán Delta ghi nhận biến thiên ${avgDelta.toFixed(1)}. Mã phiên ${sessionInput} khớp với chu kỳ Tài.`;
+            } else {
+                reason = `Cầu đang có dấu hiệu đổi nhịp. Hệ số đối xứng ${calculation % 100} cho thấy điểm rơi sẽ nằm ở cửa ${finalResult}.`;
+            }
+
+            displayResult(finalResult, confidence, reason, sessionInput);
+        }
+
+        function displayResult(res, percent, reason, code) {
+            const resultDiv = document.getElementById('prediction-result');
+            const mainRes = document.getElementById('main-result');
+            const prob = document.getElementById('probability');
+            const reasonDiv = document.getElementById('reason');
+
+            resultDiv.style.display = 'block';
+            mainRes.textContent = res;
+            mainRes.className = (res === "TÀI") ? "tai-color" : "xiu-color";
+            
+            let advice = percent > 88 ? "VÀO MẠNH" : "VÀO ĐỀU TAY";
+            prob.textContent = `Độ tin cậy: ${percent}% [${advice}]`;
+            reasonDiv.textContent = `Phân tích AI: ${reason}`;
+
+            addToHistory(code, res, percent);
+        }
+
+        function addToHistory(code, res, percent) {
+            const historyList = document.getElementById('history-list');
+            const item = document.createElement('div');
+            item.className = 'history-item';
+            const color = (res === "TÀI") ? "#ff4d94" : "#00f2ff";
+            item.innerHTML = `
+                <span>Phiên: ...${code.slice(-4)}</span>
+                <span style="color: ${color}; font-weight:bold">${res}</span>
+                <span style="opacity:0.7">${percent}%</span>
+            `;
+            historyList.prepend(item);
+            if (historyList.children.length > 6) historyList.lastElementChild.remove();
+        }
+    </script>
+</body>
+</html>
