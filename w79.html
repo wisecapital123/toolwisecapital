@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DJ Tài Xỉu Analyzer - Công Cụ Phân Tích Mã Phiên</title>
+    <style>
+        /* ========== RESET & VARIABLES ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        :root {
+            --dj-primary: #0a0a1a;
+            --dj-secondary: #15152b;
+            --dj-accent-pink: #ff00ff;
+            --dj-accent-cyan: #00ffff;
+            --dj-accent-yellow: #ffcc00;
+            --dj-text-light: #ffffff;
+            --dj-text-dim: #b0b0d0;
+            --dj-card-bg: rgba(20, 20, 40, 0.85);
+            --dj-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+            --dj-glow-pink: 0 0 30px rgba(255, 0, 255, 0.5);
+            --dj-glow-cyan: 0 0 30px rgba(0, 255, 255, 0.5);
+            --dj-glow-yellow: 0 0 30px rgba(255, 204, 0, 0.5);
+        }
+
+        /* ========== BASE STYLES ========== */
+        body {
+            background-color: var(--dj-primary);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255, 0, 255, 0.15) 0%, transparent 25%),
+                radial-gradient(circle at 90% 80%, rgba(0, 255, 255, 0.15) 0%, transparent 25%),
+                radial-gradient(circle at 50% 50%, rgba(255, 204, 0, 0.1) 0%, transparent 30%);
+            color: var(--dj-text-light);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* ========== HEADER & DJ ELEMENTS ========== */
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255, 0, 255, 0.2) 0%, transparent 70%);
+            filter: blur(40px);
+            z-index: -1;
+        }
+
+        .title {
+            font-size: 2.8rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 15px;
+            background: linear-gradient(90deg, var(--dj-accent-pink), var(--dj-accent-cyan), var(--dj-accent-yellow));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--dj-text-dim);
+            margin-bottom: 30px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .dj-controls {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .dj-button {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            background: var(--dj-secondary);
+            border: 3px solid;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px;
+        }
+
+        .dj-button.analyze {
+            border-color: var(--dj-accent-cyan);
+            box-shadow: var(--dj-glow-cyan);
+            animation: pulse-cyan 2s infinite alternate;
+        }
+
+        .dj-button.clear {
+            border-color: var(--dj-accent-pink);
+            box-shadow: var(--dj-glow-pink);
+            animation: pulse-pink 2s infinite alternate;
+        }
+
+        .dj-button.history {
+            border-color: var(--dj-accent-yellow);
+            box-shadow: var(--dj-glow-yellow);
+            animation: pulse-yellow 2s infinite alternate;
+        }
+
+        .dj-button:hover {
+            transform: scale(1.15) rotate(5deg);
+            box-shadow: 0 0 30px;
+        }
+
+        @keyframes pulse-cyan {
+            0% { box-shadow: 0 0 15px var(--dj-accent-cyan); }
+            100% { box-shadow: 0 0 30px var(--dj-accent-cyan); }
+        }
+
+        @keyframes pulse-pink {
+            0% { box-shadow: 0 0 15px var(--dj-accent-pink); }
+            100% { box-shadow: 0 0 30px var(--dj-accent-pink); }
+        }
+
+        @keyframes pulse-yellow {
+            0% { box-shadow: 0 0 15px var(--dj-accent-yellow); }
+            100% { box-shadow: 0 0 30px var(--dj-accent-yellow); }
+        }
+
+        /* ========== MAIN CONTENT LAYOUT ========== */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        @media (min-width: 992px) {
+            .main-content {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        /* ========== CARD STYLES ========== */
+        .card {
+            background: var(--dj-card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card-icon {
+            font-size: 1.8rem;
+            margin-right: 15px;
+            color: var(--dj-accent-cyan);
+        }
+
+        .card-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--dj-text-light);
+        }
+
+        /* ========== FORM STYLES ========== */
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 10px;
+            color: var(--dj-text-light);
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 16px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: var(--dj-text-light);
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--dj-accent-pink);
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.4);
+        }
+
+        .form-hint {
+            display: block;
+            margin-top: 8px;
+            color: var(--dj-text-dim);
+            font-size: 0.95rem;
+        }
+
+        /* ========== BUTTON STYLES ========== */
+        .btn {
+            display: inline-block;
+            padding: 18px 35px;
+            background: linear-gradient(90deg, var(--dj-accent-pink), var(--dj-accent-cyan));
+            border: none;
+            border-radius: 12px;
+            color: var(--dj-text-light);
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 255, 255, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .btn:hover::after {
+            left: 100%;
+        }
+
+        /* ========== RESULT DISPLAY ========== */
+        .result-display {
+            text-align: center;
+            padding: 40px 30px;
+            border-radius: 20px;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.5s ease;
+            border: 3px solid transparent;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .result-tai {
+            border-color: #ff3333;
+            background: linear-gradient(135deg, rgba(255, 0, 0, 0.1), rgba(255, 204, 0, 0.1));
+            box-shadow: 0 0 40px rgba(255, 0, 0, 0.4);
+            animation: glow-tai 2s infinite alternate;
+        }
+
+        .result-xiu {
+            border-color: #00cc00;
+            background: linear-gradient(135deg, rgba(0, 255, 0, 0.1), rgba(0, 150, 255, 0.1));
+            box-shadow: 0 0 40px rgba(0, 255, 0, 0.4);
+            animation: glow-xiu 2s infinite alternate;
+        }
+
+        @keyframes glow-tai {
+            0% { box-shadow: 0 0 30px rgba(255, 0, 0, 0.4); }
+            100% { box-shadow: 0 0 50px rgba(255, 204, 0, 0.6); }
+        }
+
+        @keyframes glow-xiu {
+            0% { box-shadow: 0 0 30px rgba(0, 255, 0, 0.4); }
+            100% { box-shadow: 0 0 50px rgba(0, 150, 255, 0.6); }
+        }
+
+        .result-label {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: var(--dj-text-dim);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .result-value {
+            font-size: 5rem;
+            font-weight: 900;
+            margin: 20px 0;
+            text-shadow: 0 0 20px currentColor;
+        }
+
+        .result-tai .result-value {
+            color: #ffcc00;
+            text-shadow: 0 0 30px #ffcc00;
+        }
+
+        .result-xiu .result-value {
+            color: #00ffff;
+            text-shadow: 0 0 30px #00ffff;
+        }
+
+        .result-details {
+            margin-top: 25px;
+            font-size: 1rem;
+            color: var(--dj-text-dim);
+            text-align: left;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        /* ========== HISTORY STYLES ========== */
+        .history-list {
+            list-style: none;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .history-item {
+            padding: 18px;
+            margin-bottom: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            border-left: 5px solid var(--dj-accent-cyan);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .history-item:hover {
+            transform: translateX(8px);
+            background: rgba(0, 0, 0, 0.5);
+            border-left-color: var(--dj-accent-pink);
+        }
+
+        .history-code {
+            font-weight: bold;
+            color: var(--dj-accent-yellow);
+            font-size: 1.1rem;
+        }
+
+        .history-result {
+            font-weight: bold;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+        }
+
+        .history-tai {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ffcc00;
+            border: 2px solid #ff3333;
+        }
+
+        .history-xiu {
+            background: rgba(0, 255, 0, 0.2);
+            color: #00ffff;
+            border: 2px solid #00cc00;
+        }
+
+        .history-time {
+            font-size: 0.9rem;
+            color: var(--dj-text-dim);
+            margin-top: 5px;
+        }
+
+        .clear-history-btn {
+            background: linear-gradient(90deg, #ff3333, #ff6600);
+            margin-top: 25px;
+        }
+
+        /* ========== FOOTER ========== */
+        footer {
+            text-align: center;
+            padding: 25px;
+            margin-top: 50px;
+            color: var(--dj-text-dim);
+            font-size: 0.95rem;
+            border-top: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* ========== SCROLLBAR STYLING ========== */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--dj-accent-pink);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--dj-accent-cyan);
+        }
+
+        /* ========== RESPONSIVE DESIGN ========== */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2rem;
+            }
+            
+            .dj-button {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+            }
+            
+            .result-value {
+                font-size: 3.5rem;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            .main-content {
+                gap: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .title {
+                font-size: 1.6rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .dj-button {
+                width: 50px;
+                height: 50px;
+                font-size: 1.3rem;
+            }
+            
+            .result-value {
+                font-size: 3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-glow"></div>
+            <h1 class="title">DJ TÀI XỈU ANALYZER</h1>
+            <p class="subtitle">Phân tích mã phiên với thuật toán xác định - Hoàn toàn không ngẫu nhiên</p>
+            
+            <div class="dj-controls">
+                <div class="dj-button analyze" onclick="analyzeSession()">
+                    <span>▶</span>
+                </div>
+                <div class="dj-button clear" onclick="clearAll()">
+                    <span>🗑</span>
+                </div>
+                <div class="dj-button history" onclick="showHistory()">
+                    <span>📊</span>
+                </div>
+            </div>
+        </header>
+        
+        <div class="main-content">
+            <!-- Input Card -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">🔢</span>
+                    <h2 class="card-title">NHẬP THÔNG TIN PHIÊN</h2>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Mã Phiên (Chuỗi ký tự bất kỳ)</label>
+                    <input type="text" id="sessionCode" class="form-control" 
+                           placeholder="Ví dụ: TX123456789, SESSION001, GAME2023..." 
+                           maxlength="50">
+                    <span class="form-hint">Nhập mã phiên hiện tại của bạn</span>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Kết Quả Gần Nhất (5-7 kết quả)</label>
+                    <input type="text" id="recentResults" class="form-control" 
+                           placeholder="Ví dụ: T,X,T,X,X hoặc T X T X X" 
+                           maxlength="20">
+                    <span class="form-hint">Nhập T (Tài) hoặc X (Xỉu), cách nhau bằng dấu phẩy hoặc khoảng trắng</span>
+                </div>
+                
+                <button class="btn" onclick="analyzeSession()">
+                    <span>🔍 PHÂN TÍCH NGAY</span>
+                </button>
+                
+                <div style="margin-top: 25px; padding: 20px; background: rgba(0, 0, 0, 0.2); border-radius: 12px;">
+                    <h3 style="color: var(--dj-accent-yellow); margin-bottom: 10px;">📊 THUẬT TOÁN XÁC ĐỊNH</h3>
+                    <p style="color: var(--dj-text-dim); font-size: 0.95rem;">
+                        Cùng một mã phiên và kết quả gần nhất sẽ LUÔN cho ra kết quả giống nhau. 
+                        Thuật toán trích xuất số từ mã phiên, kết hợp với kết quả gần nhất để tính toán giá trị xác định.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Result Card -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">🎯</span>
+                    <h2 class="card-title">KẾT QUẢ PHÂN TÍCH</h2>
+                </div>
+                
+                <div id="resultDisplay" class="result-display">
+                    <div class="result-label">DỰ ĐOÁN PHIÊN TIẾP THEO</div>
+                    <div class="result-value">--</div>
+                    <div class="result-details">
+                        <p><strong>Mã phiên:</strong> <span id="currentCodeDisplay">Chưa nhập</span></p>
+                        <p><strong>Giá trị tính toán:</strong> <span id="calculatedValue">--</span></p>
+                        <p><strong>Phương pháp:</strong> <span id="methodDescription">Chưa tính toán</span></p>
+                        <p><strong>Kết quả gần nhất:</strong> <span id="recentResultsDisplay">Chưa nhập</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- History Card -->
+        <div class="card" style="margin-top: 30px;">
+            <div class="card-header">
+                <span class="card-icon">📋</span>
+                <h2 class="card-title">LỊCH SỬ PHÂN TÍCH</h2>
+            </div>
+            
+            <div id="historyList" class="history-list">
+                <div style="text-align: center; padding: 40px; color: var(--dj-text-dim);">
+                    <span style="font-size: 3rem; display: block; margin-bottom: 15px;">📊</span>
+                    <p>Chưa có lịch sử phân tích</p>
+                    <p>Hãy nhập mã phiên để bắt đầu!</p>
+                </div>
+            </div>
+            
+            <button class="btn clear-history-btn" onclick="clearHistory()">
+                <span>🗑 XÓA LỊCH SỬ</span>
+            </button>
+        </div>
+        
+        <footer>
+            <p>© 2023 DJ TÀI XỈU ANALYZER | Thuật toán xác định - Kết quả luôn đồng nhất với cùng đầu vào</p>
+            <p style="margin-top: 10px; font-size: 0.9rem; color: rgba(255, 255, 255, 0.6);">
+                🎯 Công cụ này chỉ phục vụ mục đích giải trí và phân tích kỹ thuật
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // ============================================
+        // KHỞI TẠO VÀ BIẾN TOÀN CỤC
+        // ============================================
+        
+        // Lưu lịch sử vào localStorage
+        let analysisHistory = JSON.parse(localStorage.getItem('taiXiuHistory')) || [];
+        
+        // DOM Elements
+        const sessionCodeInput = document.getElementById('sessionCode');
+        const recentResultsInput = document.getElementById('recentResults');
+        const resultDisplay = document.getElementById('resultDisplay');
+        const resultValue = document.querySelector('.result-value');
+        const currentCodeDisplay = document.getElementById('currentCodeDisplay');
+        const calculatedValueSpan = document.getElementById('calculatedValue');
+        const methodDescriptionSpan = document.getElementById('methodDescription');
+        const recentResultsDisplay = document.getElementById('recentResultsDisplay');
+        const historyList = document.getElementById('historyList');
+        
+        // ============================================
+        // HÀM TIỆN ÍCH
+        // ============================================
+        
+        /**
+         * Xử lý chuỗi kết quả gần nhất từ input
+         * @param {string} input - Chuỗi nhập từ người dùng
+         * @returns {Array} Mảng các kết quả T/X đã được validate
+         */
+        function parseRecentResults(input) {
+            if (!input || !input.trim()) return [];
+            
+            // Xóa khoảng trắng và chuyển thành chữ hoa
+            let cleanedInput = input.toUpperCase().trim();
+            
+            // Nếu có dấu phẩy, tách theo dấu phẩy
+            if (cleanedInput.includes(',')) {
+                return cleanedInput.split(',').map(item => item.trim()).filter(item => item === 'T' || item === 'X');
+            }
+            // Nếu không có dấu phẩy, tách từng ký tự
+            else {
+                return cleanedInput.split('').filter(char => char === 'T' || char === 'X');
+            }
+        }
+        
+        /**
+         * Trích xuất số từ chuỗi mã phiên
+         * @param {string} str - Chuỗi mã phiên
+         * @returns {Array} Mảng các số trích xuất được
+         */
+        function extractNumbersFromString(str) {
+            // Lấy tất cả các ký tự số từ chuỗi
+            const numbers = str.match(/\d/g);
+            
+            // Nếu không tìm thấy số, sử dụng mã ASCII của các ký tự
+            if (!numbers || numbers.length === 0) {
+                return Array.from(str).map(char => char.charCodeAt(0) % 10);
+            }
+            
+            // Chuyển đổi thành mảng số
+            return numbers.map(num => parseInt(num, 10));
+        }
+        
+        // ============================================
+        // THUẬT TOÁN PHÂN TÍCH XÁC ĐỊNH
+        // ============================================
+        
+        /**
+         * Tạo giá trị xác định từ mã phiên và kết quả gần nhất
+         * @param {string} sessionCode - Mã phiên
+         * @param {Array} recentResults - Mảng kết quả gần nhất
+         * @returns {Object} Giá trị và phương pháp tính toán
+         */
+        function calculateDeterministicValue(sessionCode, recentResults) {
+            // 1. Trích xuất các số từ mã phiên (lấy tối đa 7 số)
+            const numbers = extractNumbersFromString(sessionCode).slice(0, 7);
+            
+            // 2. Nếu mã phiên có ít hơn 7 số, bổ sung bằng giá trị từ kết quả gần nhất
+            const paddedNumbers = [...numbers];
+            while (paddedNumbers.length < 7) {
+                const index = paddedNumbers.length % Math.max(recentResults.length, 1);
+                const value = recentResults.length > 0 ? 
+                    (recentResults[index] === 'T' ? 1 : 0) : 
+                    paddedNumbers.length + 1;
+                paddedNumbers.push(value % 10);
+            }
+            
+            // 3. Tạo số thập phân từ 7 số đã chọn
+            let decimalValue = 0;
+            for (let i = 0; i < paddedNumbers.length; i++) {
+                decimalValue += paddedNumbers[i] * Math.pow(10, paddedNumbers.length - i - 1);
+            }
+            
+            // 4. Thêm trọng số từ kết quả gần nhất
+            let recentWeight = 0;
+            recentResults.forEach((result, index) => {
+                recentWeight += (result === 'T' ? 1 : 0) * Math.pow(2, index);
+            });
+            
+            // 5. Tính giá trị cuối cùng (giới hạn để tránh tràn số)
+            const finalValue = (decimalValue * (recentWeight + 1)) % 10000;
+            
+            return {
+                value: finalValue,
+                method: `(${paddedNumbers.join('')}) × (2^${recentResults.length} - ${recentWeight}) % 10000`,
+                numbers: paddedNumbers,
+                recentWeight: recentWeight
+            };
+        }
+        
+        /**
+         * Xác định kết quả Tài/Xỉu dựa trên giá trị tính toán
+         * @param {string} sessionCode - Mã phiên
+         * @param {Array} recentResults - Mảng kết quả gần nhất
+         * @returns {Object} Kết quả phân tích
+         */
+        function determineTaiXiu(sessionCode, recentResults) {
+            // Tính giá trị xác định
+            const { value, method, numbers, recentWeight } = calculateDeterministicValue(sessionCode, recentResults);
+            
+            // Áp dụng phép toán modulo 2 để quyết định Tài/Xỉu
+            const isTai = value % 2 === 1;
+            
+            // Tạo chuỗi hiển thị kết quả gần nhất
+            const recentResultsString = recentResults.map(r => r === 'T' ? 'TÀI' : 'XỈU').join(', ');
+            
+            return {
+                result: isTai ? "TÀI" : "XỈU",
+                value: value,
+                method: `Giá trị tính: ${value} → ${value} % 2 = ${value % 2} → ${isTai ? "TÀI" : "XỈU"}`,
+                recentResultsString: recentResultsString || "Không có",
+                details: `7 số mã phiên: ${numbers.join('')} | Trọng số kết quả: ${recentWeight}`
+            };
+        }
+        
+        // ============================================
+        // HÀM XỬ LÝ GIAO DIỆN
+        // ============================================
+        
+        /**
+         * Hiển thị kết quả phân tích
+         */
+        function displayResult() {
+            const sessionCode = sessionCodeInput.value.trim();
+            const recentResults = parseRecentResults(recentResultsInput.value);
+            
+            // Kiểm tra đầu vào
+            if (!sessionCode) {
+                alert("Vui lòng nhập mã phiên!");
+                return;
+            }
+            
+            if (recentResults.length < 5 || recentResults.length > 7) {
+                alert("Vui lòng nhập 5-7 kết quả gần nhất (T hoặc X)!");
+                return;
+            }
+            
+            // Phân tích và xác định kết quả
+            const analysisResult = determineTaiXiu(sessionCode, recentResults);
+            
+            // Cập nhật giao diện
+            currentCodeDisplay.textContent = sessionCode;
+            calculatedValueSpan.textContent = analysisResult.value;
+            methodDescriptionSpan.textContent = analysisResult.method;
+            recentResultsDisplay.textContent = analysisResult.recentResultsString;
+            resultValue.textContent = analysisResult.result;
+            
+            // Cập nhật màu sắc và hiệu ứng
+            if (analysisResult.result === "TÀI") {
+                resultDisplay.className = "result-display result-tai";
+            } else {
+                resultDisplay.className = "result-display result-xiu";
+            }
+            
+            // Lưu vào lịch sử
+            saveToHistory(sessionCode, recentResults, analysisResult);
+        }
+        
+        /**
+         * Lưu kết quả vào lịch sử
+         */
+        function saveToHistory(sessionCode, recentResults, analysisResult) {
+            const historyItem = {
+                code: sessionCode,
+                result: analysisResult.result,
+                value: analysisResult.value,
+                recentResults: recentResults,
+                timestamp: new Date().toLocaleString('vi-VN'),
+                details: analysisResult.details
+            };
+            
+            // Thêm vào đầu mảng
+            analysisHistory.unshift(historyItem);
+            
+            // Giới hạn 20 mục
+            if (analysisHistory.length > 20) {
+                analysisHistory = analysisHistory.slice(0, 20);
+            }
+            
+            // Lưu vào localStorage
+            localStorage.setItem('taiXiuHistory', JSON.stringify(analysisHistory));
+            
+            // Cập nhật hiển thị
+            updateHistoryDisplay();
+        }
+        
+        /**
+         * Cập nhật hiển thị lịch sử
+         */
+        function updateHistoryDisplay() {
+            if (analysisHistory.length === 0) {
+                historyList.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: var(--dj-text-dim);">
+                        <span style="font-size: 3rem; display: block; margin-bottom: 15px;">📊</span>
+                        <p>Chưa có lịch sử phân tích</p>
+                        <p>Hãy nhập mã phiên để bắt đầu!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let historyHTML = '';
+            analysisHistory.forEach(item => {
+                const resultClass = item.result === "TÀI" ? "history-tai" : "history-xiu";
+                const recentResultsStr = item.recentResults ? 
+                    item.recentResults.map(r => r === 'T' ? 'T' : 'X').join(', ') : 
+                    'Không có';
+                
+                historyHTML += `
+                    <li class="history-item">
+                        <div>
+                            <div class="history-code">${item.code}</div>
+                            <div class="history-time">${item.timestamp}</div>
+                            <div style="font-size: 0.85rem; color: var(--dj-text-dim); margin-top: 5px;">
+                                Kết quả gần: ${recentResultsStr}
+                            </div>
+                        </div>
+                        <div class="history-result ${resultClass}">${item.result}</div>
+                    </li>
+                `;
+            });
+            
+            historyList.innerHTML = historyHTML;
+        }
+        
+        /**
+         * Xóa toàn bộ lịch sử
+         */
+        function clearHistory() {
+            if (confirm("Bạn có chắc chắn muốn xóa toàn bộ lịch sử phân tích không?")) {
+                analysisHistory = [];
+                localStorage.removeItem('taiXiuHistory');
+                updateHistoryDisplay();
+                alert("Đã xóa toàn bộ lịch sử!");
+            }
+        }
+        
+        /**
+         * Xóa tất cả dữ liệu nhập
+         */
+        function clearAll() {
+            if (confirm("Xóa tất cả dữ liệu nhập?")) {
+                sessionCodeInput.value = '';
+                recentResultsInput.value = '';
+                resultDisplay.className = "result-display";
+                resultValue.textContent = "--";
+                currentCodeDisplay.textContent = "Chưa nhập";
+                calculatedValueSpan.textContent = "--";
+                methodDescriptionSpan.textContent = "Chưa tính toán";
+                recentResultsDisplay.textContent = "Chưa nhập";
+            }
+        }
+        
+        /**
+         * Hiển thị lịch sử (đã được tích hợp trong updateHistoryDisplay)
+         */
+        function showHistory() {
+            updateHistoryDisplay();
+            alert(`Đang hiển thị ${analysisHistory.length} kết quả trong lịch sử`);
+        }
+        
+        /**
+         * Hàm chính để phân tích phiên
+         */
+        function analyzeSession() {
+            displayResult();
+        }
+        
+        // ============================================
+        // SỰ KIỆN VÀ KHỞI TẠO
+        // ============================================
+        
+        // Tự động phân tích khi nhấn Enter
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                analyzeSession();
+            }
+        });
+        
+        // Tự động phân tích khi nhập đủ dữ liệu
+        sessionCodeInput.addEventListener('input', function() {
+            if (this.value.trim() && recentResultsInput.value.trim()) {
+                // Tự động phân tích sau 1 giây nếu không có thay đổi
+                clearTimeout(window.autoAnalyzeTimeout);
+                window.autoAnalyzeTimeout = setTimeout(analyzeSession, 1000);
+            }
+        });
+        
+        recentResultsInput.addEventListener('input', function() {
+            if (this.value.trim() && sessionCodeInput.value.trim()) {
+                clearTimeout(window.autoAnalyzeTimeout);
+                window.autoAnalyzeTimeout =
