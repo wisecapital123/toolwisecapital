@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MD5 NEURAL HYBRID - ULTIMATE FUSION</title>
+    <style>
+        :root {
+            --bg: #0b0e14;
+            --card: #151921;
+            --border: #2d333b;
+            --accent: #00d2ff;
+            --tai: #ff4d4d;
+            --xiu: #38b6ff;
+            --text: #adbac7;
+            --gold: #ffc107;
+        }
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 900px; background: var(--card); border: 1px solid var(--border); border-radius: 15px; padding: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+        
+        .header { text-align: center; border-bottom: 2px solid var(--border); padding-bottom: 15px; margin-bottom: 20px; }
+        .header h1 { color: var(--gold); margin: 0; font-size: 22px; text-transform: uppercase; letter-spacing: 2px; }
+
+        /* INPUT */
+        .input-section { display: flex; gap: 10px; margin-bottom: 25px; }
+        input { flex: 1; background: #0d1117; border: 1px solid var(--border); color: var(--accent); padding: 15px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 16px; outline: none; }
+        button { background: var(--accent); color: #000; border: none; padding: 0 25px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { opacity: 0.8; transform: scale(1.02); }
+
+        /* DASHBOARD */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .panel { background: #0d1117; border: 1px solid var(--border); padding: 15px; border-radius: 10px; }
+        .full { grid-column: 1 / -1; }
+
+        /* PREDICTION */
+        .res-box { text-align: center; padding: 20px; }
+        .res-text { font-size: 60px; font-weight: 900; margin: 5px 0; }
+        .conf-bar { height: 12px; background: #222; border-radius: 6px; margin: 15px 0; overflow: hidden; display: flex; }
+        .fill { height: 100%; transition: width 1s ease-in-out; }
+
+        /* STATS TABLE */
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th { text-align: left; color: #539bf5; padding: 8px; border-bottom: 1px solid var(--border); }
+        td { padding: 8px; border-bottom: 1px solid #222; }
+
+        /* TERMINAL */
+        .terminal { background: #000; color: #00ff00; font-family: monospace; font-size: 11px; padding: 12px; border-radius: 5px; height: 120px; overflow-y: auto; line-height: 1.5; }
+        
+        /* DOTS */
+        .history { margin-top: 20px; display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+        .dot { width: 28px; height: 28px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; color: #fff; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>MD5 NEURAL HYBRID V7.0 (ULTIMATE)</h1>
+        <div style="font-size: 11px; color: #666;">Matrix Analysis + Markov Chain + Pattern Detection</div>
+    </div>
+
+    <div class="input-section">
+        <input type="text" id="md5Input" placeholder="Dán mã MD5 32 ký tự vào đây..." maxlength="32">
+        <button onclick="startAnalysis()">PHÂN TÍCH</button>
+    </div>
+
+    <div class="grid">
+        <div class="panel res-box">
+            <div style="font-size: 12px; color: #888;">DỰ ĐOÁN TỔNG HỢP</div>
+            <div id="mainResult" class="res-text">---</div>
+            <div class="conf-bar">
+                <div id="barTai" class="fill" style="background: var(--tai)"></div>
+                <div id="barXiu" class="fill" style="background: var(--xiu)"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 12px;">
+                <span id="lbTai" style="color: var(--tai)">TÀI: 50%</span>
+                <span id="lbXiu" style="color: var(--xiu)">XỈU: 50%</span>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div style="font-size: 13px; font-weight: bold; color: var(--gold); margin-bottom: 10px;">📊 CHỈ SỐ THUẬT TOÁN</div>
+            <div id="statNeural">
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    <span>Markov Matrix:</span> <b id="stMarkov" style="color:#fff">--</b>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    <span>Trend Logic:</span> <b id="stTrend" style="color:#fff">--</b>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    <span>MD5 Force:</span> <b id="stMd5" style="color:#fff">0</b>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span>Pattern:</span> <b id="stPattern" style="color:var(--accent)">None</b>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel full">
+            <div style="font-size: 13px; font-weight: bold; color: var(--accent); margin-bottom: 10px;">🧬 MD5 VECTOR ANALYSIS</div>
+            <table id="segTable">
+                <thead>
+                    <tr><th>VÙNG</th><th>HEX DATA</th><th>TỔNG</th><th>LỰC ĐẨY</th><th>DỰ ĐOÁN</th></tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div class="panel full terminal" id="logBox">
+            > System initialization... Standby.
+        </div>
+    </div>
+
+    <div class="history" id="histList"></div>
+    <div style="text-align: center; margin-top: 15px;">
+        <button onclick="clearData()" style="background:none; color:#555; font-size:11px; padding:5px;">Xóa bộ nhớ Neural</button>
+    </div>
+</div>
+
+<script>
+    let history = JSON.parse(localStorage.getItem('hybrid_storage')) || [];
+
+    function startAnalysis() {
+        const input = document.getElementById('md5Input').value.trim().toLowerCase();
+        if (!/^[a-f0-9]{32}$/.test(input)) {
+            alert("Vui lòng nhập đúng 32 ký tự MD5!");
+            return;
+        }
+
+        addLog(`> Đang quét mã: ${input}`);
+
+        // --- BƯỚC 1: LOGIC MD5 (Code 2) ---
+        let asciiWeight = 0;
+        for (let i = 0; i < 32; i++) asciiWeight += input.charCodeAt(i) * (i + 1);
+        let vectorForce = 0;
+        for (let i = 0; i < 32; i++) vectorForce += parseInt(input[i], 16) * (32 - i);
+        
+        let md5BasePoint = (asciiWeight + vectorForce) % 1000;
+        let md5Vote = md5BasePoint > 500 ? "TÀI" : "XỈU";
+
+        // Render bảng Segment
+        const tbody = document.querySelector('#segTable tbody');
+        tbody.innerHTML = "";
+        for (let i = 0; i < 4; i++) {
+            let seg = input.substr(i * 8, 8);
+            let sum = 0;
+            for (let char of seg) sum += parseInt(char, 16);
+            let v = sum > 60 ? "TÀI" : "XỈU";
+            tbody.innerHTML += `<tr><td>#${i+1}</td><td>${seg}</td><td>${sum}</td><td>${(sum/1.2).toFixed(0)}%</td><td style="color:${v==='TÀI'?'var(--tai)':'var(--xiu)'}">${v}</td></tr>`;
+        }
+
+        // --- BƯỚC 2: LOGIC THUẬT TOÁN (Code 1 - thuattoan.js) ---
+        // Chuyển history sang mảng số 1, 0 để tính toán
+        let dataNum = history.map(x => x === "TÀI" ? 1 : 0);
+        
+        let p1 = phuongPhapChuoi(dataNum);
+        let p2 = phuongPhapXuHuong(dataNum);
+        let p3 = phuongPhapTanSuat(dataNum);
+        let p4 = phuongPhapMarkov(dataNum);
+        let pAdv = duDoanNangCao(dataNum);
+
+        // --- BƯỚC 3: FUSION (HỢP NHẤT QUYẾT ĐỊNH) ---
+        let votesTai = 0; let votesXiu = 0;
+        
+        // Tổng hợp 4 phương pháp từ Code 1
+        [p1, p2, p3, p4].forEach(v => v === "TÀI" ? votesTai++ : votesXiu++);
+        
+        // Cộng thêm 2 phiếu từ MD5 Vector (Code 2)
+        if(md5Vote === "TÀI") votesTai += 2; else votesXiu += 2;
+
+        let finalResult = votesTai > votesXiu ? "TÀI" : "XỈU";
+        
+        // Nếu phát hiện Pattern đặc biệt (Chuỗi 1-1, 2-2...), ưu tiên kết quả đó
+        if (pAdv && pAdv !== "KHÔNG ĐỦ DỮ LIỆU") {
+            finalResult = pAdv;
+            document.getElementById('stPattern').innerText = "Detected!";
+            addLog(`> ⚡ PATTERN DETECTED: ${pAdv}`, "gold");
+        } else {
+            document.getElementById('stPattern').innerText = "None";
+        }
+
+        // UI Updates
+        let taiPct = (votesTai / (votesTai + votesXiu) * 100).toFixed(0);
+        const resEl = document.getElementById('mainResult');
+        resEl.innerText = finalResult;
+        resEl.style.color = finalResult === "TÀI" ? "var(--tai)" : "var(--xiu)";
+        
+        document.getElementById('barTai').style.width = taiPct + "%";
+        document.getElementById('barXiu').style.width = (100 - taiPct) + "%";
+        document.getElementById('lbTai').innerText = `TÀI: ${taiPct}%`;
+        document.getElementById('lbXiu').innerText = `XỈU: ${100-taiPct}%`;
+        
+        document.getElementById('stMarkov').innerText = p4;
+        document.getElementById('stTrend').innerText = p2;
+        document.getElementById('stMd5').innerText = md5BasePoint;
+
+        addLog(`> Kết quả: ${finalResult} (${taiPct}%)`);
+
+        // Lưu lịch sử
+        history.push(finalResult);
+        if(history.length > 30) history.shift();
+        localStorage.setItem('hybrid_storage', JSON.stringify(history));
+        renderHistory();
+        document.getElementById('md5Input').value = "";
+    }
+
+    // --- CÁC HÀM TỪ THUATTOAN.JS (GIỮ NGUYÊN GỐC) ---
+    function phuongPhapChuoi(data) {
+        if(data.length < 1) return "TÀI";
+        let last = data[data.length-1];
+        let count = 0;
+        for(let i=data.length-1; i>=0; i--) { if(data[i] === last) count++; else break; }
+        if(count >= 4) return last === 1 ? "XỈU" : "TÀI";
+        return last === 1 ? "TÀI" : "XỈU";
+    }
+
+    function phuongPhapXuHuong(data) {
+        if(data.length < 5) return "N/A";
+        let score = 0;
+        for(let i=1; i<data.length; i++) data[i] === data[i-1] ? score++ : score--;
+        return score > 0 ? (data[data.length-1] === 1 ? "TÀI" : "XỈU") : (data[data.length-1] === 1 ? "XỈU" : "TÀI");
+    }
+
+    function phuongPhapTanSuat(data) {
+        let tai = data.filter(x => x === 1).length;
+        return tai > (data.length/2) ? "TÀI" : "XỈU";
+    }
+
+    function phuongPhapMarkov(data) {
+        if(data.length < 5) return "TÀI";
+        let matrix = [[0,0],[0,0]];
+        for(let i=1; i<data.length; i++) matrix[data[i-1]][data[i]]++;
+        let cur = data[data.length-1];
+        return matrix[cur][1] > matrix[cur][0] ? "TÀI" : "XỈU";
+    }
+
+    function duDoanNangCao(data) {
+        const s = JSON.stringify(data.slice(-4));
+        if(s === "[1,0,1,0]") return "TÀI";
+        if(s === "[0,1,0,1]") return "XỈU";
+        return null;
+    }
+
+    // HELPER UI
+    function addLog(msg, color="") {
+        const box = document.getElementById('logBox');
+        box.innerHTML += `<div style="color:${color}">${msg}</div>`;
+        box.scrollTop = box.scrollHeight;
+    }
+
+    function renderHistory() {
+        const list = document.getElementById('histList');
+        list.innerHTML = history.slice().reverse().map(h => `<div class="dot" style="background:${h==='TÀI'?'var(--tai)':'var(--xiu)'}">${h==='TÀI'?'T':'X'}</div>`).join('');
+    }
+
+    function clearData() {
+        if(confirm("Xóa lịch sử học tập?")) {
+            localStorage.removeItem('hybrid_storage');
+            history = [];
+            renderHistory();
+        }
+    }
+
+    renderHistory();
+</script>
+
+</body>
+</html>
