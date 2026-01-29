@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KERNEL SENTINEL v19.0 - VISUAL DICE</title>
+    <style>
+        :root { --neon: #00ff41; --bg: #030303; --red: #ff3131; --blue: #00d2ff; --gold: #ffcf33; }
+        * { box-sizing: border-box; font-family: 'Consolas', monospace; }
+        body { background: var(--bg); color: var(--neon); padding: 10px; margin: 0; }
+        
+        .container { width: 100%; max-width: 550px; margin: 0 auto; border: 1px solid #444; padding: 15px; background: #000; }
+        
+        /* DICE VISUALS */
+        .dice-container { display: flex; justify-content: center; gap: 20px; margin: 20px 0; padding: 15px; background: #0a0a0a; border: 1px dashed #333; }
+        .dice { 
+            width: 60px; height: 60px; background: #fff; border-radius: 8px; 
+            display: flex; align-items: center; justify-content: center;
+            font-size: 30px; font-weight: bold; color: #000;
+            box-shadow: 0 0 15px rgba(255,255,255,0.2); transition: 0.5s;
+        }
+        .dice.tai { border: 4px solid var(--red); }
+        .dice.xiu { border: 4px solid var(--blue); }
+
+        .input-group { display: flex; gap: 5px; margin-bottom: 15px; }
+        input { background: #111; border: 1px solid #333; color: var(--neon); padding: 12px; flex: 1; outline: none; }
+        #scoreIn { max-width: 70px; text-align: center; }
+
+        .btn-main { width: 100%; background: var(--neon); color: #000; border: none; padding: 15px; font-weight: bold; cursor: pointer; font-size: 16px; margin-bottom: 15px; }
+        
+        .main-res { text-align: center; border: 1px solid var(--neon); padding: 20px; background: rgba(0,255,65,0.03); }
+        #resFinal { font-size: 60px; font-weight: 900; margin: 5px 0; }
+        
+        .data-info { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; font-size: 10px; color: #888; }
+        .info-item { border-left: 2px solid var(--blue); padding-left: 8px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div style="text-align:center; margin-bottom:15px;">
+        <b style="font-size: 18px; letter-spacing: 3px;">KERNEL SENTINEL v19.0</b>
+    </div>
+
+    <div class="input-group">
+        <input type="text" id="hashIn" placeholder="Mã MD5 (32 ký tự)..." maxlength="32">
+        <input type="number" id="scoreIn" placeholder="Điểm">
+    </div>
+
+    <button class="btn-main" onclick="analyzeAll()">[ PHÂN TÍCH HỆ THỐNG ]</button>
+
+    <div class="dice-container">
+        <div id="d1" class="dice">?</div>
+        <div id="d2" class="dice">?</div>
+        <div id="d3" class="dice">?</div>
+    </div>
+
+    <div class="main-res">
+        <div style="font-size: 11px;">DỰ ĐOÁN TỔNG HỢP</div>
+        <div id="resFinal">--</div>
+        <div id="confText" style="color: var(--gold); font-size: 12px;">ĐỘ TIN CẬY: 0%</div>
+    </div>
+
+    <div class="data-info">
+        <div class="info-item">Algorithm: <b>Hybrid Neural</b></div>
+        <div class="info-item">Mode: <b>Adaptive Vector</b></div>
+        <div class="info-item" id="entropyOut">Entropy: --</div>
+        <div class="info-item" id="biasOut">Bias: --</div>
+    </div>
+
+    <div style="margin-top:20px; display:flex; gap:10px;">
+        <button onclick="saveResult('TÀI')" style="flex:1; padding:10px; background:transparent; border:1px solid var(--red); color:var(--red); cursor:pointer;">LƯU TÀI</button>
+        <button onclick="saveResult('XỈU')" style="flex:1; padding:10px; background:transparent; border:1px solid var(--blue); color:var(--blue); cursor:pointer;">LƯU XỈU</button>
+    </div>
+</div>
+
+<script>
+    let db = JSON.parse(localStorage.getItem('sentinel_v19')) || { history: [], vector: 1 };
+
+    function analyzeAll() {
+        const hash = document.getElementById('hashIn').value.trim().toLowerCase();
+        const prevScore = parseInt(document.getElementById('scoreIn').value) || 10;
+
+        if (hash.length !== 32) return alert("MD5 không hợp lệ!");
+
+        // 1. Giải mã Xúc xắc ảo (Virtual Dice Decoding)
+        let v1 = (parseInt(hash.substring(7,9), 16) % 6) + 1;
+        let v2 = (parseInt(hash.substring(15,17), 16) % 6) + 1;
+        let v3 = (parseInt(hash.substring(30,32), 16) % 6) + 1;
+        let totalDice = v1 + v2 + v3;
+
+        // 2. Thuật toán Trọng số (Power Calculation)
+        let ones = 0;
+        for(let c of hash) ones += (parseInt(c, 16).toString(2).match(/1/g) || []).length;
+        
+        let bias = (10.5 - prevScore) * 3;
+        let bitPower = (ones - 64) * 2;
+        let finalPower = (bitPower + bias + (totalDice - 10.5) * 4) * db.vector;
+        
+        let conf = (1 / (1 + Math.exp(-Math.abs(finalPower) / 15)) * 100).toFixed(1);
+
+        // Hiển thị Visual Dice
+        const updateDice = (id, val, res) => {
+            const el = document.getElementById(id);
+            el.innerText = val;
+            el.className = 'dice ' + (res > 10 ? 'tai' : 'xiu');
+        };
+
+        // Delay hiệu ứng
+        let resultText = finalPower > 0 ? "TÀI" : "XỈU";
+        
+        setTimeout(() => {
+            updateDice('d1', v1, totalDice);
+            updateDice('d2', v2, totalDice);
+            updateDice('d3', v3, totalDice);
+
+            document.getElementById('resFinal').innerText = resultText;
+            document.getElementById('resFinal').style.color = resultText === "TÀI" ? "var(--red)" : "var(--blue)";
+            document.getElementById('confText').innerText = `ĐỘ TIN CẬY: ${conf}%`;
+            document.getElementById('entropyOut').innerText = `Entropy: ${(ones/1.28).toFixed(1)}%`;
+            document.getElementById('biasOut').innerText = `Bias: ${bias.toFixed(1)}`;
+        }, 300);
+    }
+
+    function saveResult(actual) {
+        let predicted = document.getElementById('resFinal').innerText;
+        if(predicted === "--") return;
+        
+        let isCorrect = (predicted === actual);
+        db.history.push(isCorrect);
+        
+        if(db.history.slice(-2).every(x => x === false)) {
+            db.vector *= -1; // Đảo cầu tự động
+        }
+        
+        if(db.history.length > 40) db.history.shift();
+        localStorage.setItem('sentinel_v19', JSON.stringify(db));
+        document.getElementById('hashIn').value = "";
+        alert("Đã lưu kết quả để huấn luyện AI.");
+    }
+</script>
+</body>
+</html>
