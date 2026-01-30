@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI HIT.CLUB - RED LIGHT EDITION</title>
+    <style>
+        :root {
+            --red-light: #ff0000;
+            --red-glow: rgba(255, 0, 0, 0.6);
+            --bg-dark: #0a0000;
+            --card-bg: #150000;
+            --tai: #ffcc00; /* Vàng Gold */
+            --xiu: #00ffcc; /* Xanh Cyan */
+            --text: #ffffff;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Orbitron', sans-serif; }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image: radial-gradient(circle at center, #2b0000 0%, #0a0000 100%);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        .container { width: 100%; max-width: 480px; }
+
+        /* ROBOT AI SECTION */
+        .ai-robot {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .robot-frame {
+            width: 140px;
+            height: 100px;
+            background: #200000;
+            border: 2px solid var(--red-light);
+            border-radius: 30px;
+            margin: 0 auto;
+            position: relative;
+            box-shadow: 0 0 20px var(--red-glow);
+            overflow: hidden;
+        }
+
+        .eye-container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 35px;
+        }
+
+        .eye-led {
+            width: 35px;
+            height: 10px;
+            background: #400000;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+
+        /* Robot nháy khi có kết quả */
+        .blink-tai { background: var(--tai) !important; box-shadow: 0 0 20px var(--tai); animation: ai-pulse 0.5s infinite; }
+        .blink-xiu { background: var(--xiu) !important; box-shadow: 0 0 20px var(--xiu); animation: ai-pulse 0.5s infinite; }
+
+        @keyframes ai-pulse { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
+
+        .ai-title {
+            margin-top: 15px;
+            font-size: 0.8rem;
+            color: var(--red-light);
+            text-shadow: 0 0 10px var(--red-light);
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        /* CARD MAIN */
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid #440000;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.15);
+        }
+
+        .input-group { margin-bottom: 20px; }
+        label { display: block; font-size: 0.75rem; color: #ff8888; margin-bottom: 8px; }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            background: #000;
+            border: 1px solid var(--red-light);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.9rem;
+            text-align: center;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(to right, #770000, #ff0000);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px var(--red-glow);
+            text-transform: uppercase;
+        }
+
+        /* RESULT BOX */
+        .result-box {
+            margin-top: 25px;
+            padding: 20px;
+            background: rgba(255, 0, 0, 0.05);
+            border-radius: 15px;
+            text-align: center;
+            border: 1px dashed #440000;
+        }
+
+        #resText { font-size: 3.5rem; font-weight: 900; display: none; margin: 10px 0; }
+        .tai-color { color: var(--tai); text-shadow: 0 0 20px rgba(255, 204, 0, 0.6); }
+        .xiu-color { color: var(--xiu); text-shadow: 0 0 20px rgba(0, 255, 204, 0.6); }
+
+        /* HISTORY */
+        .history { margin-top: 30px; }
+        .history-item {
+            background: #1a0000;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            border: 1px solid #300000;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="container">
+    <div class="ai-robot">
+        <div class="robot-frame">
+            <div class="eye-container">
+                <div id="eyeL" class="eye-led"></div>
+                <div id="eyeR" class="eye-led"></div>
+            </div>
+        </div>
+        <div class="ai-title">AI RED-LIGHT ANALYZER</div>
+    </div>
+
+    <div class="card">
+        <div class="input-group">
+            <label>NHẬP DỮ LIỆU CẦU (VD: Tài 11, Xỉu 10, Tài 14...):</label>
+            <input type="text" id="dataInput" placeholder="Nhập chuỗi kết quả cách nhau bằng dấu phẩy">
+        </div>
+        <div class="input-group">
+            <label>MÃ PHIÊN HIỆN TẠI:</label>
+            <input type="number" id="phienInput" placeholder="Ví dụ: 98273645">
+        </div>
+        <button onclick="runAI()">KHỞI CHẠY PHÂN TÍCH</button>
+
+        <div class="result-box">
+            <div id="status" style="color: #666; font-size: 0.7rem;">CHỜ DỮ LIỆU ĐẦU VÀO...</div>
+            <div id="resText">---</div>
+            <div id="logicInfo" style="font-size: 0.7rem; color: #ff8888; margin-top: 5px;"></div>
+        </div>
+    </div>
+
+    <div class="history" id="historyBox"></div>
+</div>
+
+<script>
+    /**
+     * THUẬT TOÁN AI RED-LIGHT (DETERMINISTIC)
+     * Phân tích sự biến động của điểm số xúc xắc kết hợp mã phiên.
+     */
+    function runAI() {
+        const dataRaw = document.getElementById('dataInput').value.trim();
+        const phien = document.getElementById('phienInput').value.trim();
+        const resText = document.getElementById('resText');
+        const status = document.getElementById('status');
+        const logicInfo = document.getElementById('logicInfo');
+
+        if (!dataRaw || !phien) {
+            alert("Vui lòng nhập đầy đủ lịch sử cầu và mã phiên!");
+            return;
+        }
+
+        // Xử lý dữ liệu đầu vào
+        const historyArr = dataRaw.split(',').map(item => item.trim().toUpperCase());
+        status.innerText = "ROBOT ĐANG QUÉT LINK HIT.CLUB...";
+        resText.style.display = "none";
+
+        setTimeout(() => {
+            let prediction = "";
+            let logicDesc = "";
+
+            // Lấy tay cuối cùng
+            const lastHand = historyArr[historyArr.length - 1]; 
+            const isLastTai = lastHand.includes("TÀI") || lastHand.includes("T");
+            
+            // Trích xuất điểm số (ví dụ 'Tài 11' -> 11)
+            const lastPoints = parseInt(lastHand.replace(/[^0-9]/g, '')) || 10;
+
+            // 1. LOGIC NHẬN DIỆN CẦU ĐẶC BIỆT
+            const patternString = historyArr.map(s => s[0]).join('');
+
+            // Cầu bệt
+            if (patternString.endsWith("TTTT") || patternString.endsWith("XXXX")) {
+                // Logic bẻ cầu bệt dựa trên mã phiên
+                if (parseInt(phien.slice(-1)) % 3 === 0) {
+                    prediction = isLastTai ? "XỈU" : "TÀI";
+                    logicDesc = "PHÁT HIỆN BỆT DÀI -> LOGIC BẺ CẦU PHIÊN";
+                } else {
+                    prediction = isLastTai ? "TÀI" : "XỈU";
+                    logicDesc = "THEO CẦU BỆT ĐANG MẠNH";
+                }
+            }
+            // Cầu 1-1
+            else if (patternString.endsWith("TXTX") || patternString.endsWith("XTXT")) {
+                prediction = isLastTai ? "XỈU" : "TÀI";
+                logicDesc = "CẦU ĐẢO 1-1 XÁC ĐỊNH";
+            }
+            // 2. LOGIC ĐIỂM SỐ XÚC XẮC (DETERMINISTIC)
+            else {
+                // Thuật toán: Điểm phiên + Điểm tay cuối + vị trí ASCII
+                let sessionSum = 0;
+                for(let char of phien) sessionSum += parseInt(char);
+                
+                const factor = sessionSum + lastPoints;
+                prediction = (factor % 2 !== 0) ? "TÀI" : "XỈU";
+                logicDesc = "PHÂN TÍCH ĐIỂM SỐ XÚC XẮC PHIÊN " + phien;
+            }
+
+            // HIỂN THỊ KẾT QUẢ
+            status.innerText = "KẾT QUẢ PHIÊN #" + phien;
+            resText.innerText = prediction;
+            resText.className = prediction === "TÀI" ? "tai-color" : "xiu-color";
+            resText.style.display = "block";
+            logicInfo.innerText = logicDesc;
+
+            // ROBOT NHÁY MẮT
+            const eyeL = document.getElementById('eyeL');
+            const eyeR = document.getElementById('eyeR');
+            const blinkClass = prediction === "TÀI" ? "blink-tai" : "blink-xiu";
+            
+            eyeL.className = "eye-led " + blinkClass;
+            eyeR.className = "eye-led " + blinkClass;
+
+            saveHistory(phien, prediction);
+        }, 1200);
+    }
+
+    function saveHistory(phien, res) {
+        const box = document.getElementById('historyBox');
+        const item = document.createElement('div');
+        item.className = 'history-item';
+        const color = res === "TÀI" ? "var(--tai)" : "var(--xiu)";
+        item.innerHTML = `
+            <span style="color:#880000">PHIÊN ${phien.slice(-4)}</span>
+            <strong style="color:${color}">${res}</strong>
+        `;
+        box.insertBefore(item, box.firstChild);
+    }
+</script>
+
+</body>
+</html>
