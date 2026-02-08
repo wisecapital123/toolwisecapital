@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>OMNI-TRACER v23.0 QUANTUM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Roboto:wght@400;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #020202; --panel: #0a0a0f; --border: #1f1f2e;
+            --tai: #ff2e2e; --xiu: #00ff88; --text: #e0e6ed;
+            --core: #3b82f6; --gold: #f59e0b; --neon: #8b5cf6;
+        }
+        * { box-sizing: border-box; font-family: 'Roboto', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: var(--text); margin: 0; padding: 10px; display: flex; justify-content: center; min-height: 100vh; }
+        
+        .container {
+            width: 100%; max-width: 600px; background: var(--panel);
+            border: 1px solid var(--border); border-radius: 16px; padding: 15px;
+            display: flex; flex-direction: column; box-shadow: 0 0 40px rgba(59, 130, 246, 0.15);
+        }
+
+        /* HEADER */
+        .header { text-align: center; margin-bottom: 15px; border-bottom: 1px solid #222; padding-bottom: 10px; }
+        .brand { font-family: 'Rajdhani', sans-serif; color: var(--core); font-size: 24px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
+        .sub-brand { font-size: 10px; color: #666; letter-spacing: 1px; }
+
+        /* PATTERN MATCHER (SO KHỚP QUÁ KHỨ) */
+        .match-box {
+            background: #111116; padding: 12px; border-radius: 8px; margin-bottom: 15px;
+            border: 1px solid #333; position: relative;
+        }
+        .match-title { font-size: 10px; color: #888; font-weight: bold; text-transform: uppercase; display: flex; justify-content: space-between; }
+        .match-result { font-size: 15px; color: #fff; font-weight: bold; margin-top: 5px; }
+        .match-highlight { color: var(--gold); }
+
+        /* VISUAL ROADMAP */
+        .roadmap-container {
+            background: #15151a; border: 2px solid #444; overflow-x: auto; 
+            margin-bottom: 15px; height: 180px; position: relative; border-radius: 6px;
+            background-image: linear-gradient(#2a2a2a 1px, transparent 1px), linear-gradient(90deg, #2a2a2a 1px, transparent 1px);
+            background-size: 28px 28px; 
+        }
+        .roadmap-grid {
+            display: grid; grid-template-rows: repeat(6, 28px); grid-auto-columns: 28px;
+            grid-auto-flow: column; position: absolute; top: 0; left: 0;
+        }
+        .bead {
+            width: 24px; height: 24px; border-radius: 50%; margin: 2px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 900; color: #fff; z-index: 10;
+            box-shadow: 1px 1px 4px rgba(0,0,0,0.8);
+        }
+        .b-tai { background: var(--tai); border: 2px solid #a31616; }
+        .b-xiu { background: var(--xiu); border: 2px solid #067a46; }
+        .b-last { border: 2px solid #fff; animation: pulse 1s infinite; z-index: 11; transform: scale(1.15); }
+        @keyframes pulse { 0% {transform:scale(1);} 50% {transform:scale(1.2);} 100% {transform:scale(1);} }
+
+        /* INPUTS */
+        .input-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
+        .md5-inp {
+            width: 100%; padding: 14px; background: #050505; border: 1px solid #333; color: var(--gold); 
+            border-radius: 8px; text-align: center; font-family: 'Rajdhani'; font-size: 14px; font-weight: bold; outline: none;
+        }
+        .row-bot { display: flex; gap: 8px; }
+        .score-inp {
+            width: 80px; padding: 14px; background: #050505; border: 1px solid #333; color: #fff; 
+            border-radius: 8px; text-align: center; font-weight: bold; font-size: 14px; outline: none;
+        }
+        .btn-analyze {
+            flex: 1; background: linear-gradient(135deg, var(--core), var(--neon)); color: #fff;
+            font-weight: 900; border: none; border-radius: 8px; cursor: pointer; font-size: 14px;
+            text-transform: uppercase; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        /* RESULT PANEL */
+        .res-panel {
+            background: #0d0d12; border: 1px solid #333; padding: 15px; border-radius: 12px; 
+            margin-bottom: 10px; text-align: center; position: relative;
+        }
+        .conf-label { font-size: 10px; color: #666; margin-bottom: 5px; display: block; }
+        .conf-bar-bg { width: 100%; height: 6px; background: #222; border-radius: 3px; overflow: hidden; margin-bottom: 10px; }
+        .conf-bar-fill { height: 100%; width: 0%; background: var(--gold); transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+        
+        .res-text { font-size: 56px; font-weight: 900; margin: 0; line-height: 1; font-family: 'Rajdhani'; text-shadow: 0 0 30px rgba(0,0,0,0.5); }
+        
+        .logic-list { text-align: left; margin-top: 15px; font-size: 11px; color: #aaa; border-top: 1px solid #222; padding-top: 10px; }
+        .logic-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .logic-val { font-weight: bold; color: #fff; }
+
+        /* CONTROLS */
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 5px; }
+        .btn-add {
+            padding: 16px; border: none; border-radius: 8px; color: #fff;
+            font-weight: 900; cursor: pointer; font-size: 16px;
+        }
+        .btn-red { background: var(--tai); box-shadow: 0 4px 0 #8a1c1c; }
+        .btn-green { background: var(--xiu); box-shadow: 0 4px 0 #055c35; }
+        
+        .footer { display: flex; justify-content: space-between; margin-top: 20px; font-size: 11px; color: #555; text-decoration: underline; cursor: pointer; }
+        
+        .t-red { color: var(--tai); } .t-green { color: var(--xiu); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div class="brand">OMNI-TRACER v23.0</div>
+        <div class="sub-brand">QUANTUM MEMORY: TÌM LẠI KÝ ỨC CẦU</div>
+    </div>
+
+    <div class="match-box">
+        <div class="match-title">
+            <span>QUÉT KÝ ỨC (TOÀN BỘ LỊCH SỬ)</span>
+            <span id="matchPercent">0%</span>
+        </div>
+        <div id="matchResult" class="match-result">Đang chờ dữ liệu để so sánh...</div>
+    </div>
+
+    <div class="roadmap-container" id="scrollBox">
+        <div class="roadmap-grid" id="grid"></div>
+    </div>
+
+    <div class="input-group">
+        <input type="text" id="hashIn" class="md5-inp" placeholder="Dán mã MD5 (Hệ thống tự sửa lỗi)">
+        <div class="row-bot">
+            <input type="tel" id="scoreIn" class="score-inp" placeholder="Điểm" maxlength="2">
+            <button class="btn-analyze" onclick="analyzeQuantum()">PHÂN TÍCH LƯỢNG TỬ</button>
+        </div>
+    </div>
+
+    <div class="res-panel" id="resBox">
+        <span class="conf-label">ĐỘ TIN CẬY TỔNG HỢP: <span id="confNum">0%</span></span>
+        <div class="conf-bar-bg"><div id="confBar" class="conf-bar-fill"></div></div>
+        
+        <div id="finalRes" class="res-text" style="color:#444">WAIT</div>
+        
+        <div class="logic-list">
+            <div class="logic-row">
+                <span>1. Soi Ký Ức (Pattern):</span>
+                <span id="logPat" class="logic-val">---</span>
+            </div>
+            <div class="logic-row">
+                <span>2. MD5 Lượng Tử:</span>
+                <span id="logMD5" class="logic-val">---</span>
+            </div>
+            <div class="logic-row">
+                <span>3. Điểm Hồi Quy:</span>
+                <span id="logScore" class="logic-val">---</span>
+            </div>
+            <div id="finalAdvice" style="text-align:center; color:var(--gold); margin-top:5px; font-weight:bold;"></div>
+        </div>
+    </div>
+
+    <div style="text-align:center; font-size:10px; color:#666; margin-bottom:5px;">ĐỒNG BỘ DỮ LIỆU THỰC TẾ</div>
+    <div class="btn-grid">
+        <button class="btn-add btn-red" onclick="addNode('T')">VỀ TÀI</button>
+        <button class="btn-add btn-green" onclick="addNode('X')">VỀ XỈU</button>
+    </div>
+
+    <div class="footer">
+        <span onclick="undo()">Hoàn tác</span>
+        <span onclick="reset()">Xóa sạch làm lại</span>
+    </div>
+</div>
+
+<script>
+    let history = JSON.parse(localStorage.getItem('omni_v23_db')) || [];
+
+    // --- 1. RENDER BIG ROAD ---
+    function renderRoadmap() {
+        const grid = document.getElementById('grid');
+        grid.innerHTML = '';
+        let matrix = {}, currentX = 0, currentY = 0, lastVal = null, streakStartX = 0;
+
+        history.forEach((val, index) => {
+            if (index === 0) { currentX=0; currentY=0; streakStartX=0; } 
+            else {
+                if (val === lastVal) {
+                    let nextY = currentY + 1;
+                    if (nextY > 5 || matrix[`${currentX},${nextY}`]) currentX++; else currentY = nextY;
+                } else {
+                    streakStartX++; currentX = streakStartX; currentY = 0;
+                    while (matrix[`${currentX},0`]) { streakStartX++; currentX = streakStartX; }
+                }
+            }
+            matrix[`${currentX},${currentY}`] = val;
+            
+            const bead = document.createElement('div');
+            let isLast = index === history.length - 1;
+            bead.className = `bead ${val === 'T' ? 'b-tai' : 'b-xiu'} ${isLast ? 'b-last' : ''}`;
+            bead.innerText = val;
+            bead.style.gridColumn = currentX + 1;
+            bead.style.gridRow = currentY + 1;
+            grid.appendChild(bead);
+            lastVal = val;
+        });
+        document.getElementById('scrollBox').scrollLeft = document.getElementById('scrollBox').scrollWidth;
+        
+        scanMemoryPattern();
+    }
+
+    // --- 2. MEMORY PATTERN (SOI KÝ ỨC - THUẬT TOÁN MỚI) ---
+    // Tìm kiếm đoạn cầu hiện tại (ví dụ 4 ván cuối) xem trong quá khứ đã từng xuất hiện chưa
+    function scanMemoryPattern() {
+        if(history.length < 10) {
+            document.getElementById('matchResult').innerText = "Cần nhập ít nhất 10 ván để soi ký ức...";
+            return null;
+        }
+
+        // Lấy 4 ván gần nhất làm "Mẫu" (Pattern)
+        const patternLen = 4;
+        const currentPattern = history.slice(-patternLen).join('');
+        
+        // Quét lịch sử (trừ 4 ván cuối ra)
+        let foundT = 0;
+        let foundX = 0;
+        let historyString = history.slice(0, -1).join(''); // Lấy lịch sử cũ
+        
+        // Tìm tất cả các lần xuất hiện của mẫu này
+        for(let i = 0; i < historyString.length - patternLen; i++) {
+            if(historyString.substring(i, i + patternLen) === currentPattern) {
+                // Tìm thấy mẫu giống hệt! Xem ván tiếp theo là gì
+                let nextVal = historyString[i + patternLen];
+                if(nextVal === 'T') foundT++;
+                if(nextVal === 'X') foundX++;
+            }
+        }
+
+        let pred = "---";
+        let msg = "";
+        let weight = 0;
+
+        if(foundT === 0 && foundX === 0) {
+            msg = `Mẫu cầu mới (${currentPattern}). Chưa có trong ký ức.`;
+        } else {
+            let total = foundT + foundX;
+            if(foundT > foundX) {
+                pred = "T";
+                let pct = Math.round((foundT/total)*100);
+                msg = `Đã gặp ${total} lần. ${pct}% về TÀI.`;
+                weight = 80;
+            } else if(foundX > foundT) {
+                pred = "X";
+                let pct = Math.round((foundX/total)*100);
+                msg = `Đã gặp ${total} lần. ${pct}% về XỈU.`;
+                weight = 80;
+            } else {
+                msg = `Đã gặp ${total} lần. Tỷ lệ 50/50 (Khó đoán).`;
+            }
+        }
+
+        document.getElementById('matchResult').innerHTML = msg;
+        return { pred: pred, weight: weight, msg: msg };
+    }
+
+    // --- 3. ANALYZE QUANTUM (FUSION) ---
+    function analyzeQuantum() {
+        // Tự động làm sạch mã MD5 (Xóa khoảng trắng)
+        let hashRaw = document.getElementById('hashIn').value;
+        let hash = hashRaw.trim().replace(/\s/g, ''); // Fix lỗi nhập liệu
+        document.getElementById('hashIn').value = hash; // Update lại vào ô input cho đẹp
+
+        const scoreVal = document.getElementById('scoreIn').value.trim();
+        const score = parseInt(scoreVal);
+        const memData = scanMemoryPattern();
+
+        if(hash.length !== 32) return alert("Mã MD5 sai (Phải đủ 32 ký tự)!");
+        if(isNaN(score)) return alert("Chưa nhập điểm!");
+
+        // A. MD5 QUANTUM (Phân tích Hex sâu)
+        let bits = "";
+        let hexSum = 0;
+        let numChars = 0; // Đếm số chữ số trong chuỗi hex
+        for(let i=0; i<hash.length; i++) {
+            let charCode = parseInt(hash[i], 16);
+            hexSum += charCode;
+            bits += charCode.toString(2).padStart(4, '0');
+            if(!isNaN(parseInt(hash[i]))) numChars++;
+        }
+        let ones = (bits.match(/1/g)||[]).length;
+        
+        // Thuật toán MD5 mới: Cân bằng Năng Lượng
+        let pMD5 = "---";
+        // Nếu Mật độ Bit > 64 và Tổng Hex Chẵn -> Tài
+        // Nếu Mật độ Bit < 64 và Tổng Hex Lẻ -> Xỉu
+        // Các trường hợp lai -> Xét số lượng chữ số (numChars)
+        if(ones > 64 && hexSum % 2 === 0) pMD5 = "T";
+        else if(ones <= 64 && hexSum % 2 !== 0) pMD5 = "X";
+        else {
+            // Trường hợp lai: Dùng số lượng chữ số để quyết định
+            pMD5 = (numChars % 2 === 0) ? "T" : "X"; 
+        }
+
+        // B. SCORE REVERSION
+        let pScore = "---";
+        let scoreWeight = 50;
+        if(score <= 4) { pScore="T"; scoreWeight=90; } // Đáy cực hạn
+        else if(score >= 17) { pScore="X"; scoreWeight=90; } // Đỉnh cực hạn
+        else if(score <= 8) pScore = "T";
+        else if(score >= 13) pScore = "X";
+
+        // C. FUSION (TỔNG HỢP)
+        let sT = 0, sX = 0;
+        
+        // Cộng điểm MD5
+        if(pMD5==='T') sT += 40; else sX += 40;
+        
+        // Cộng điểm Score
+        if(pScore==='T') sT += scoreWeight; else if(pScore==='X') sX += scoreWeight;
+        
+        // Cộng điểm Ký Ức (Rất quan trọng nếu đã từng gặp)
+        if(memData && memData.pred !== "---") {
+            if(memData.pred === 'T') sT += memData.weight;
+            else sX += memData.weight;
+        }
+
+        // Tính toán cuối cùng
+        let final = "BỎ";
+        let color = "#444";
+        let maxS = Math.max(sT, sX);
+        let totalPossible = 40 + scoreWeight + (memData?memData.weight:0);
+        let percent = Math.min(99, Math.round((maxS / totalPossible) * 100));
+
+        if(percent < 60) {
+            final = "KHÔNG CHẮC"; color = "#888"; percent = 35;
+        } else {
+            if (sT > sX) { final = "TÀI"; color = "var(--tai)"; }
+            else { final = "XỈU"; color = "var(--xiu)"; }
+        }
+
+        // DISPLAY
+        const resEl = document.getElementById('finalRes');
+        const box = document.getElementById('resBox');
+        
+        resEl.innerText = final;
+        resEl.style.color = color;
+        
+        document.getElementById('confNum').innerText = percent + "%";
+        document.getElementById('confBar').style.width = percent + "%";
+        
+        if(percent >= 85) box.style.borderColor = "var(--gold)";
+        else if(percent >= 65) box.style.borderColor = "var(--core)";
+        else box.style.borderColor = "#333";
+
+        // Update Log
+        const updateLog = (id, val) => {
+            const el = document.getElementById(id);
+            el.innerText = val === 'T' ? "TÀI" : (val === 'X' ? "XỈU" : "---");
+            el.className = `logic-val ${val==='T'?'t-red':(val==='X'?'t-green':'')}`;
+        };
+        
+        updateLog('logPat', memData ? memData.pred : '---');
+        updateLog('logMD5', pMD5);
+        updateLog('logScore', pScore);
+
+        let advice = "";
+        if(memData && memData.weight >= 80 && memData.pred === final) advice = "✅ KÝ ỨC CẦU TRÙNG KHỚP! ĐÁNH MẠNH.";
+        else if(pScore === final && (score <=4 || score >=17)) advice = "⚡ ĐIỂM CỰC HẠN! BẺ CẦU THÀNH CÔNG.";
+        else if(percent < 60) advice = "⚠️ DỮ LIỆU XUNG ĐỘT. NÊN BỎ.";
+        
+        document.getElementById('finalAdvice').innerText = advice;
+    }
+
+    // CONTROLS
+    function addNode(val) {
+        history.push(val);
+        localStorage.setItem('omni_v23_db', JSON.stringify(history));
+        document.getElementById('hashIn').value = "";
+        document.getElementById('scoreIn').value = "";
+        document.getElementById('finalRes').innerText = "SẴN SÀNG";
+        document.getElementById('confBar').style.width = "0%";
+        document.getElementById('finalAdvice').innerText = "";
+        renderRoadmap();
+    }
+    
+    function undo() {
+        history.pop();
+        localStorage.setItem('omni_v23_db', JSON.stringify(history));
+        renderRoadmap();
+    }
+    
+    function reset() {
+        if(confirm("Xóa toàn bộ ký ức cầu?")) {
+            history = [];
+            localStorage.removeItem('omni_v23_db');
+            renderRoadmap();
+            document.getElementById('matchResult').innerText = "Đang chờ dữ liệu...";
+        }
+    }
+
+    renderRoadmap();
+</script>
+</body>
+</html>
